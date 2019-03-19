@@ -1,4 +1,8 @@
-﻿using System;
+﻿using FluentAssertions;
+using NUnit.Framework;
+using OpenQA.Selenium;
+using System;
+using System.Threading;
 using TechTalk.SpecFlow;
 using Training8A.PageObjects;
 using Training8A.Utilities;
@@ -37,7 +41,7 @@ namespace Training8A.StepDefinitions
         [When(@"I enter last name")]
         public void WhenIEnterLastName()
         {
-            ScenarioContext.Current.Pending();
+            registration.EnterLastName("Ogunlaja");
         }
 
         [When(@"I enter email ""(.*)""")]
@@ -50,19 +54,21 @@ namespace Training8A.StepDefinitions
         [When(@"I enter mobile number")]
         public void WhenIEnterMobileNumber()
         {
-            ScenarioContext.Current.Pending();
+            registration.EnterMobileNo("077777");
         }
         
         [When(@"I enter password")]
         public void WhenIEnterPassword()
         {
-            ScenarioContext.Current.Pending();
+            registration.EnterPassword("MyVerySecuredPassword");
         }
+
+
         
         [When(@"I confirm password")]
         public void WhenIConfirmPassword()
         {
-            ScenarioContext.Current.Pending();
+            registration.EnterConfirmPassword("MyVerySecuredPassword");
         }
         
         [When(@"the click on signUp")]
@@ -70,11 +76,66 @@ namespace Training8A.StepDefinitions
         {
             registration.ClickSignUP();
         }
-        
+
+        [When(@"I wait for Element")]
+        public void WhenIWaitForElement()
+        {
+            WaitForElements waitForElements = new WaitForElements();
+            //WaitForElements.Wait(Hooks.Driver, "login"); //used for static 
+            waitForElements.WaitForElementByID(Hooks.Driver, "login");
+            waitForElements.FluentWaitForElementByCSS(Hooks.Driver, "login");
+            waitForElements.FluentWaitWithByClause(Hooks.Driver, By.LinkText("testLogin"));
+            //waitForElements.FluentWaitWithFindElements(Hooks.Driver, Hooks.Driver.FindElement(By.Id("id")));
+        }
+
+
         [Then(@"I should be registered")]
         public void ThenIShouldBeRegistered()
         {
-            ScenarioContext.Current.Pending();
+            Thread.Sleep(30000);
+
+            //NUnit Assertion
+          //  Assert.Contains("", ""); 
+           
+            //Assert.AreEqual(registration.SuccessMessageIsDisplayed(), true);
+            Assert.IsTrue(registration.SuccessMessageIsDisplayed(), "Error Message: Registration failed");
+
+            registration.SuccessMessageIsDisplayed().Should().BeTrue("Error Message: Registration failed");
+            registration.SuccessMessageIsDisplayed().Should().Be(true);
         }
+
+
+        [When(@"I enter password ""(.*)""")]
+        public void WhenIEnterPassword(string passwordEntered)
+        {
+            registration.EnterPassword(passwordEntered);
+        }
+
+        [When(@"I confirm password ""(.*)""")]
+        public void WhenIConfirmPassword(string confirmPasswordEntered)
+        {
+            registration.EnterConfirmPassword(confirmPasswordEntered);
+
+        }
+
+        [Then(@"the password is too short error is displayed")]
+        public void ThenThePasswordIsTooShortErrorIsDisplayed()
+        {
+            registration.PasswordTooShortMessageIsDisplayed().Should().BeTrue("Password is not Too Should");
+        }
+
+        [Then(@"the error message ""(.*)"" is displayed for ""(.*)""")]
+        public void ThenTheErrorMessageIsDisplayedFor(string message, string test)
+        {
+            if (test == "PasswordTooShort")
+                registration.GetTextForPasswordTooShort().Should().Be(message);
+            else if (test == "Invalidemail")
+                registration.GetTextForInvalidEmail().Should().Be(message);
+            else if (test == "MobileTooShort")
+                registration.GetTextForMobileTooshort().Should().Be(message);
+
+
+        }
+
     }
 }
